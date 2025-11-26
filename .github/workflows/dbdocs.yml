@@ -1,0 +1,108 @@
+name: DBDocs Auto Generation
+
+on:
+  push:
+    branches:
+      - develop
+    paths:
+      - 'src/entities/**'
+      - '.github/workflows/dbdocs.yml'
+  pull_request:
+    branches:
+      - develop
+      - main
+      - staging
+    paths:
+      - 'src/entities/**'
+      - '.github/workflows/dbdocs.yml'
+
+jobs:
+  generate-dbdocs:
+    runs-on: ubuntu-latest
+    environment: dbdocs
+
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: erd-test
+          POSTGRES_PASSWORD: erd-test
+          POSTGRES_DB: erd-test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'yarn'
+
+      - name: Install dependencies
+        run: yarn install --frozen-lockfile
+
+      - name: Install CLI tools
+        run: npm install -g dbdocs @dbml/cli
+
+      - name: Sync TypeORM schema to database
+        env:
+          DB_HOST: localhost
+          DB_PORT: 5432
+          DB_USERNAME: erd-test
+          DB_PASSWORD: erd-test
+          DB_DATABASE: erd-test
+        run: npx ts-node -r tsconfig-paths/register ./scripts/sync-schema.ts
+
+      - name: Export PostgreSQL schema to SQL
+        env:
+          PGPASSWORD: erd-test
+        run: |
+          pg_dump -h localhost -U erd-test -d erd-test --schema-only --no-owner --no-privileges > schema.sql
+
+      - name: Convert SQL to DBML
+        run: sql2dbml schema.sql --postgres -o database.dbml
+
+      - name: Set project name based on branch
+        id: set-project
+        run: |
+          BRANCH_NAME="${{ github.ref_name }}"
+          if [ "$BRANCH_NAME" = "main" ]; then
+            echo "project_name=dbdocs-prod" >> $GITHUB_OUTPUT
+          elif [ "$BRANCH_NAME" = "staging" ]; then
+            echo "project_name=dbdocs-staging" >> $GITHUB_OUTPUT
+          else
+            echo "project_name=dbdocs-dev" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Setup dbdocs credentials
+        env:
+          DBDOCS_TOKEN: ${{ secrets.DBDOCS_TOKEN }}
+        run: |
+          echo "machine api.dbdocs.io login dbdocs password $DBDOCS_TOKEN" > ~/.netrc
+          chmod 600 ~/.netrc
+
+      - name: Build and publish to dbdocs
+        run: dbdocs build database.dbml --project=${{ steps.set-project.outputs.project_name }}
+
+      - name: Comment PR with dbdocs link (on PR)
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const projectName = '${{ steps.set-project.outputs.project_name }}';
+            const body = `📊 **Database Documentation Updated**\n\nView the updated ERD at: https://dbdocs.io/${projectName}`;
+
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: body
+            });
