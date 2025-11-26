@@ -18,6 +18,21 @@ jobs:
   generate-dbdocs:
     runs-on: ubuntu-latest
 
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: erd-test
+          POSTGRES_PASSWORD: erd-test
+          POSTGRES_DB: erd-test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -31,17 +46,26 @@ jobs:
       - name: Install dependencies
         run: yarn install --frozen-lockfile
 
-      - name: Install dbdocs CLI
-        run: npm install -g dbdocs
+      - name: Install CLI tools
+        run: npm install -g dbdocs @dbml/cli
 
-      - name: Install typeorm-dbml-generator
-        run: npm install -g typeorm-dbml-generator
+      - name: Sync TypeORM schema to database
+        env:
+          DB_HOST: localhost
+          DB_PORT: 5432
+          DB_USERNAME: erd-test
+          DB_PASSWORD: erd-test
+          DB_DATABASE: erd-test
+        run: npx ts-node -r tsconfig-paths/register ./scripts/sync-schema.ts
 
-      - name: Generate DBML from TypeORM entities
+      - name: Export PostgreSQL schema to SQL
+        env:
+          PGPASSWORD: erd-test
         run: |
-          npx typeorm-dbml-generator \
-            --dataSource=./src/database/data-source.ts \
-            --output=./database.dbml
+          pg_dump -h localhost -U erd-test -d erd-test --schema-only --no-owner --no-privileges > schema.sql
+
+      - name: Convert SQL to DBML
+        run: sql2dbml schema.sql --postgres -o database.dbml
 
       - name: Set project name based on branch
         id: set-project
