@@ -6,6 +6,7 @@ on:
       - develop
     paths:
       - 'src/entities/**'
+      - '.github/workflows/dbdocs.yml'
   pull_request:
     branches:
       - develop
@@ -13,6 +14,7 @@ on:
       - staging
     paths:
       - 'src/entities/**'
+      - '.github/workflows/dbdocs.yml'
 
 jobs:
   generate-dbdocs:
