@@ -82,6 +82,14 @@ jobs:
             echo "project_name=dbdocs-dev" >> $GITHUB_OUTPUT
           fi
 
+      - name: Debug token (remove after testing)
+        env:
+          DBDOCS_TOKEN: ${{ secrets.DBDOCS_TOKEN }}
+        run: |
+          echo "Token length: ${#DBDOCS_TOKEN}"
+          echo "Token starts with: ${DBDOCS_TOKEN:0:10}..."
+          echo "Token ends with: ...${DBDOCS_TOKEN: -10}"
+
       - name: Build and publish to dbdocs
         env:
           DBDOCS_TOKEN: ${{ secrets.DBDOCS_TOKEN }}
