@@ -6,7 +6,6 @@ export * from './product.entity';
 export * from './tag.entity';
 export * from './order.entity';
 export * from './order-item.entity';
-export * from './cart.entity';
 export * from './cart-item.entity';
 export * from './review.entity';
 export * from './payment.entity';
@@ -18,4 +17,4 @@ export * from './setting.entity';
 export * from './country.entity';
 export * from './faq.entity';
 export * from './email-template.entity';
-
+export * from './cart.entity';
