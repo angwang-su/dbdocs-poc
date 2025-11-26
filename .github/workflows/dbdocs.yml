@@ -20,6 +20,9 @@ jobs:
   generate-dbdocs:
     runs-on: ubuntu-latest
     environment: dbdocs
+    permissions:
+      contents: read
+      pull-requests: write
 
     services:
       postgres:
