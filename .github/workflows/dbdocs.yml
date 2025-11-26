@@ -85,9 +85,7 @@ jobs:
       - name: Build and publish to dbdocs
         env:
           DBDOCS_TOKEN: ${{ secrets.DBDOCS_TOKEN }}
-        run: |
-          dbdocs login --token $DBDOCS_TOKEN
-          dbdocs build database.dbml --project=${{ steps.set-project.outputs.project_name }}
+        run: dbdocs build database.dbml --project=${{ steps.set-project.outputs.project_name }}
 
       - name: Comment PR with dbdocs link (on PR)
         if: github.event_name == 'pull_request'
