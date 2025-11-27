@@ -62,6 +62,7 @@ jobs:
           DB_USERNAME: erd-test
           DB_PASSWORD: erd-test
           DB_DATABASE: erd-test
+          TYPEORM_SYNC: 'true'
         run: npx ts-node -r tsconfig-paths/register ./scripts/sync-schema.ts
 
       - name: Export PostgreSQL schema to SQL

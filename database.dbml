@@ -1,0 +1,584 @@
+Enum "coupons_discounttype_enum" {
+  "percentage"
+  "fixed"
+}
+
+Enum "notifications_type_enum" {
+  "email"
+  "sms"
+  "push"
+}
+
+Enum "orders_status_enum" {
+  "pending"
+  "confirmed"
+  "processing"
+  "shipped"
+  "delivered"
+  "cancelled"
+}
+
+Enum "payments_method_enum" {
+  "credit_card"
+  "debit_card"
+  "bank_transfer"
+  "paypal"
+}
+
+Enum "payments_status_enum" {
+  "pending"
+  "completed"
+  "failed"
+  "refunded"
+}
+
+Enum "promotions_type_enum" {
+  "banner"
+  "popup"
+  "discount"
+  "free_shipping"
+}
+
+Enum "refunds_reason_enum" {
+  "defective"
+  "wrong_item"
+  "not_as_described"
+  "changed_mind"
+  "other"
+}
+
+Enum "refunds_status_enum" {
+  "requested"
+  "approved"
+  "rejected"
+  "completed"
+}
+
+Enum "shipments_status_enum" {
+  "preparing"
+  "shipped"
+  "in_transit"
+  "delivered"
+}
+
+Table "addresses" {
+  "id" integer [pk, not null]
+  "label" "character varying(100)" [not null]
+  "street" "character varying(255)" [not null]
+  "city" "character varying(100)" [not null]
+  "state" "character varying(100)" [not null]
+  "zipCode" "character varying(20)" [not null]
+  "country" "character varying(100)" [not null]
+  "isDefault" boolean [not null, default: false]
+  "userId" integer
+}
+
+Table "audit_logs" {
+  "id" integer [pk, not null]
+  "entityName" "character varying" [not null]
+  "entityId" integer [not null]
+  "action" "character varying(50)" [not null]
+  "oldValue" jsonb
+  "newValue" jsonb
+  "performedBy" integer
+  "ipAddress" "character varying"
+  "createdAt" timestamp [not null, default: `now()`]
+}
+
+Table "bookmarks" {
+  "id" integer [pk, not null]
+  "createdAt" timestamp [not null, default: `now()`]
+  "userId" integer
+  "postId" integer
+
+  Indexes {
+    (userId, postId) [unique, name: "UQ_9da212cab1c81470ba27a1d43b3"]
+  }
+}
+
+Table "cart_items" {
+  "id" integer [pk, not null]
+  "quantity" integer [not null]
+  "cartId" integer
+  "productId" integer
+}
+
+Table "carts" {
+  "id" integer [pk, not null]
+  "createdAt" timestamp [not null, default: `now()`]
+  "updatedAt" timestamp [not null, default: `now()`]
+  "userId" integer [unique]
+}
+
+Table "categories" {
+  "id" integer [pk, not null]
+  "description" "character varying"
+  "isActive" boolean [not null, default: true]
+  "parentId" integer
+  "name" "character varying(100)" [not null]
+}
+
+Table "categories_example" {
+  "id" integer [pk, not null]
+  "name" "character varying" [unique, not null]
+  "description" "character varying"
+  "postCount" integer [not null, default: 0]
+  "createdAt" timestamp [not null, default: `now()`]
+  "updatedAt" timestamp [not null, default: `now()`]
+}
+
+Table "comments" {
+  "id" integer [pk, not null]
+  "content" text [not null]
+  "likeCount" integer [not null, default: 0]
+  "isDeleted" boolean [not null, default: false]
+  "createdAt" timestamp [not null, default: `now()`]
+  "updatedAt" timestamp [not null, default: `now()`]
+  "authorId" integer
+  "postId" integer
+  "parentId" integer
+}
+
+Table "countries" {
+  "id" integer [pk, not null]
+  "name" "character varying(100)" [not null]
+  "code" "character varying(2)" [unique, not null]
+  "code3" "character varying(3)" [unique, not null]
+  "phoneCode" "character varying"
+  "currency" "character varying"
+  "isActive" boolean [not null, default: true]
+}
+
+Table "coupons" {
+  "id" integer [pk, not null]
+  "code" "character varying(50)" [unique, not null]
+  "description" "character varying"
+  "discountType" coupons_discounttype_enum [not null]
+  "discountValue" numeric(10,2) [not null]
+  "minPurchaseAmount" numeric(10,2)
+  "validFrom" timestamp [not null]
+  "validUntil" timestamp [not null]
+  "isActive" boolean [not null, default: true]
+  "usageCount" integer [not null, default: 0]
+  "maxUsage" integer
+  "createdAt" timestamp [not null, default: `now()`]
+}
+
+Table "email_templates" {
+  "id" integer [pk, not null]
+  "slug" "character varying(100)" [unique, not null]
+  "name" "character varying(200)" [not null]
+  "subject" "character varying(300)" [not null]
+  "bodyHtml" text [not null]
+  "bodyText" text
+  "variables" jsonb
+  "isActive" boolean [not null, default: true]
+  "createdAt" timestamp [not null, default: `now()`]
+  "updatedAt" timestamp [not null, default: `now()`]
+}
+
+Table "faqs" {
+  "id" integer [pk, not null]
+  "question" "character varying(500)" [not null]
+  "answer" text [not null]
+  "category" "character varying" [not null, default: `'general'::charactervarying`]
+  "sortOrder" integer [not null, default: 0]
+  "isPublished" boolean [not null, default: true]
+  "createdAt" timestamp [not null, default: `now()`]
+  "updatedAt" timestamp [not null, default: `now()`]
+}
+
+Table "follows" {
+  "id" integer [pk, not null]
+  "createdAt" timestamp [not null, default: `now()`]
+  "followerId" integer
+  "followingId" integer
+
+  Indexes {
+    (followerId, followingId) [unique, name: "UQ_105079775692df1f8799ed0fac8"]
+  }
+}
+
+Table "inventories" {
+  "id" integer [pk, not null]
+  "quantity" integer [not null]
+  "warehouse" "character varying(100)" [not null]
+  "location" "character varying(50)"
+  "lastRestockedAt" timestamp
+  "createdAt" timestamp [not null, default: `now()`]
+  "updatedAt" timestamp [not null, default: `now()`]
+  "productId" integer
+}
+
+Table "likes" {
+  "id" integer [pk, not null]
+  "createdAt" timestamp [not null, default: `now()`]
+  "userId" integer
+  "postId" integer
+
+  Indexes {
+    (userId, postId) [unique, name: "UQ_74b9b8cd79a1014e50135f266fe"]
+  }
+}
+
+Table "logs" {
+  "id" integer [pk, not null]
+  "action" "character varying" [not null]
+  "createdAt" timestamp [not null, default: `now()`]
+}
+
+Table "media" {
+  "id" integer [pk, not null]
+  "url" "character varying" [not null]
+  "type" "character varying" [not null]
+  "thumbnailUrl" "character varying"
+  "size" integer
+  "mimeType" "character varying"
+  "order" integer [not null, default: 0]
+  "createdAt" timestamp [not null, default: `now()`]
+  "postId" integer
+}
+
+Table "notifications" {
+  "id" integer [pk, not null]
+  "message" text [not null]
+  "isRead" boolean [not null, default: false]
+  "createdAt" timestamp [not null, default: `now()`]
+  "userId" integer [not null]
+  "title" "character varying(200)" [not null]
+  "type" notifications_type_enum [not null]
+}
+
+Table "order_items" {
+  "id" integer [pk, not null]
+  "quantity" integer [not null]
+  "unitPrice" numeric(10,2) [not null]
+  "subtotal" numeric(10,2) [not null]
+  "orderId" integer
+  "productId" integer
+}
+
+Table "orders" {
+  "id" integer [pk, not null]
+  "orderNumber" "character varying" [unique, not null]
+  "status" orders_status_enum [not null, default: `'pending'::public.orders_status_enum`]
+  "totalAmount" numeric(10,2) [not null]
+  "shippingAddress" "character varying"
+  "createdAt" timestamp [not null, default: `now()`]
+  "updatedAt" timestamp [not null, default: `now()`]
+  "userId" integer
+}
+
+Table "payments" {
+  "id" integer [pk, not null]
+  "amount" numeric(10,2) [not null]
+  "method" payments_method_enum [not null]
+  "status" payments_status_enum [not null, default: `'pending'::public.payments_status_enum`]
+  "transactionId" "character varying"
+  "paidAt" timestamp [not null, default: `now()`]
+  "orderId" integer [unique]
+}
+
+Table "post_categories" {
+  "post_id" integer [not null]
+  "category_id" integer [not null]
+
+  Indexes {
+    (post_id, category_id) [pk, name: "PK_4d9e522c51f13c52ad35813cf35"]
+    post_id [type: btree, name: "IDX_becbe37977577e3eeb089b69fe"]
+    category_id [type: btree, name: "IDX_f6e2655c798334198182db6399"]
+  }
+}
+
+Table "post_categories_example" {
+  "post_id" integer [not null]
+  "category_id" integer [not null]
+
+  Indexes {
+    (post_id, category_id) [pk, name: "PK_d2bf14415454b21d46f06d55412"]
+    post_id [type: btree, name: "IDX_4bdeac32c1734d8e6074cf8398"]
+    category_id [type: btree, name: "IDX_fb36e50e6e1b13efb21fcf8d90"]
+  }
+}
+
+Table "post_tags" {
+  "post_id" integer [not null]
+  "tag_id" integer [not null]
+
+  Indexes {
+    (post_id, tag_id) [pk, name: "PK_deee54a40024b7afc16d25684f8"]
+    tag_id [type: btree, name: "IDX_192ab488d1c284ac9abe2e3035"]
+    post_id [type: btree, name: "IDX_5df4e8dc2cb3e668b962362265"]
+  }
+}
+
+Table "posts" {
+  "id" integer [pk, not null]
+  "title" "character varying" [not null]
+  "content" text [not null]
+  "isPublished" boolean [not null, default: false]
+  "viewCount" integer [not null, default: 0]
+  "createdAt" timestamp [not null, default: `now()`]
+  "updatedAt" timestamp [not null, default: `now()`]
+  "authorId" integer
+}
+
+Table "posts_example" {
+  "id" integer [pk, not null]
+  "title" "character varying" [not null]
+  "content" text [not null]
+  "isPublished" boolean [not null, default: false]
+  "viewCount" integer [not null, default: 0]
+  "createdAt" timestamp [not null, default: `now()`]
+  "updatedAt" timestamp [not null, default: `now()`]
+  "authorId" integer
+}
+
+Table "product_tags" {
+  "tag_id" integer [not null]
+  "product_id" integer [not null]
+
+  Indexes {
+    (tag_id, product_id) [pk, name: "PK_8ca809b37ff76596b63fe60ac41"]
+    product_id [type: btree, name: "IDX_5b0c6fc53c574299ecc7f9ee22"]
+    tag_id [type: btree, name: "IDX_f2cd3faf2e129a4c69c05a291e"]
+  }
+}
+
+Table "products" {
+  "id" integer [pk, not null]
+  "name" "character varying(200)" [not null]
+  "description" text
+  "price" numeric(10,2) [not null]
+  "stock" integer [not null, default: 0]
+  "imageUrl" "character varying"
+  "isActive" boolean [not null, default: true]
+  "createdAt" timestamp [not null, default: `now()`]
+  "updatedAt" timestamp [not null, default: `now()`]
+  "categoryId" integer
+}
+
+Table "profiles" {
+  "id" integer [pk, not null]
+  "bio" "character varying"
+  "avatarUrl" "character varying"
+  "website" "character varying"
+  "location" "character varying"
+  "birthDate" date
+  "createdAt" timestamp [not null, default: `now()`]
+  "updatedAt" timestamp [not null, default: `now()`]
+  "userId" integer [unique]
+}
+
+Table "promotions" {
+  "id" integer [pk, not null]
+  "title" "character varying(200)" [not null]
+  "description" text
+  "type" promotions_type_enum [not null]
+  "imageUrl" "character varying"
+  "linkUrl" "character varying"
+  "startDate" timestamp [not null]
+  "endDate" timestamp [not null]
+  "priority" integer [not null, default: 0]
+  "isActive" boolean [not null, default: true]
+  "createdAt" timestamp [not null, default: `now()`]
+  "updatedAt" timestamp [not null, default: `now()`]
+}
+
+Table "refunds" {
+  "id" integer [pk, not null]
+  "amount" numeric(10,2) [not null]
+  "reason" refunds_reason_enum [not null]
+  "description" text
+  "status" refunds_status_enum [not null, default: `'requested'::public.refunds_status_enum`]
+  "adminNote" text
+  "requestedAt" timestamp [not null, default: `now()`]
+  "processedAt" timestamp
+  "updatedAt" timestamp [not null, default: `now()`]
+  "orderId" integer
+}
+
+Table "reports" {
+  "id" integer [pk, not null]
+  "type" "character varying" [not null]
+  "reason" "character varying" [not null]
+  "description" text
+  "status" "character varying" [not null, default: `'pending'::charactervarying`]
+  "createdAt" timestamp [not null, default: `now()`]
+  "updatedAt" timestamp [not null, default: `now()`]
+  "reporterId" integer
+  "postId" integer
+  "commentId" integer
+  "reportedUserId" integer
+}
+
+Table "reviews" {
+  "id" integer [pk, not null]
+  "rating" integer [not null]
+  "comment" text
+  "createdAt" timestamp [not null, default: `now()`]
+  "userId" integer
+  "productId" integer
+}
+
+Table "settings" {
+  "id" integer [pk, not null]
+  "key" "character varying(100)" [unique, not null]
+  "value" text [not null]
+  "description" "character varying"
+  "category" "character varying" [not null, default: `'general'::charactervarying`]
+  "updatedAt" timestamp [not null, default: `now()`]
+}
+
+Table "shipments" {
+  "id" integer [pk, not null]
+  "trackingNumber" "character varying"
+  "carrier" "character varying"
+  "status" shipments_status_enum [not null, default: `'preparing'::public.shipments_status_enum`]
+  "estimatedDelivery" timestamp
+  "deliveredAt" timestamp
+  "createdAt" timestamp [not null, default: `now()`]
+  "updatedAt" timestamp [not null, default: `now()`]
+  "orderId" integer [unique]
+}
+
+Table "suppliers" {
+  "id" integer [pk, not null]
+  "name" "character varying(200)" [not null]
+  "contactName" "character varying(100)"
+  "email" "character varying(100)" [not null]
+  "phone" "character varying(20)"
+  "address" text
+  "country" "character varying(100)"
+  "isActive" boolean [not null, default: true]
+  "createdAt" timestamp [not null, default: `now()`]
+  "updatedAt" timestamp [not null, default: `now()`]
+}
+
+Table "tags" {
+  "id" integer [pk, not null]
+  "color" "character varying"
+  "name" "character varying(50)" [unique, not null]
+}
+
+Table "user_profiles" {
+  "id" integer [pk, not null]
+  "bio" "character varying"
+  "avatarUrl" "character varying"
+  "phoneNumber" "character varying"
+  "birthDate" date
+  "userId" integer [unique]
+}
+
+Table "users" {
+  "id" integer [pk, not null]
+  "isActive" boolean [not null, default: true]
+  "createdAt" timestamp [not null, default: `now()`]
+  "updatedAt" timestamp [not null, default: `now()`]
+  "password" "character varying(255)" [not null]
+  "email" "character varying(100)" [not null]
+  "name" "character varying(50)" [not null]
+}
+
+Table "users_example" {
+  "id" integer [pk, not null]
+  "email" "character varying" [unique, not null]
+  "name" "character varying" [not null]
+  "age" integer
+  "isActive" boolean [not null, default: true]
+  "createdAt" timestamp [not null, default: `now()`]
+  "updatedAt" timestamp [not null, default: `now()`]
+}
+
+Table "wishlists" {
+  "id" integer [pk, not null]
+  "addedAt" timestamp [not null, default: `now()`]
+  "userId" integer
+  "productId" integer
+}
+
+Ref "FK_063c6f46d6cbebf35f3a5ec3d4e":"products"."id" < "wishlists"."productId"
+
+Ref "FK_13ba957bcb616719a0dc3fca82f":"orders"."id" < "shipments"."orderId"
+
+Ref "FK_151b79a83ba240b0cb31b2302d1":"users"."id" < "orders"."userId"
+
+Ref "FK_192ab488d1c284ac9abe2e30356":"tags"."id" < "post_tags"."tag_id"
+
+Ref "FK_19f6e91bd3b53e47103305f3f84":"products"."id" < "inventories"."productId"
+
+Ref "FK_1a7a328279e62111bebddfc2649":"comments"."id" < "reports"."commentId"
+
+Ref "FK_315ecd98bd1a42dcf2ec4e2e985":"users"."id" < "profiles"."userId"
+
+Ref "FK_4353be8309ce86650def2f8572d":"users"."id" < "reports"."reporterId"
+
+Ref "FK_4548cc4a409b8651ec75f70e280":"users"."id" < "comments"."authorId"
+
+Ref "FK_4bdeac32c1734d8e6074cf8398e":"posts"."id" < "post_categories_example"."post_id" [update: cascade, delete: cascade]
+
+Ref "FK_4f3c30555daa6ab0b70a1db772c":"users"."id" < "wishlists"."userId"
+
+Ref "FK_5b0c6fc53c574299ecc7f9ee22e":"products"."id" < "product_tags"."product_id"
+
+Ref "FK_5df4e8dc2cb3e668b962362265d":"posts"."id" < "post_tags"."post_id" [update: cascade, delete: cascade]
+
+Ref "FK_605cf4d367799f3e5cfb9f68229":"orders"."id" < "refunds"."orderId"
+
+Ref "FK_69828a178f152f157dcf2f70a89":"users"."id" < "carts"."userId"
+
+Ref "FK_6bebfa3fc68a35f5af3f9883c4e":"posts"."id" < "reports"."postId"
+
+Ref "FK_6e8d0bb8ca2d66f9a6bdd6aa645":"posts"."id" < "bookmarks"."postId"
+
+Ref "FK_72679d98b31c737937b8932ebe6":"products"."id" < "cart_items"."productId"
+
+Ref "FK_7ed5659e7139fc8bc039198cc1f":"users"."id" < "reviews"."userId"
+
+Ref "FK_8481388d6325e752cd4d7e26c6d":"users"."id" < "user_profiles"."userId"
+
+Ref "FK_8770bd9030a3d13c5f79a7d2e81":"comments"."id" < "comments"."parentId"
+
+Ref "FK_95c93a584de49f0b0e13f753630":"users"."id" < "addresses"."userId"
+
+Ref "FK_9a6f051e66982b5f0318981bcaa":"categories"."id" < "categories"."parentId"
+
+Ref "FK_9dcde1b1308b5f22f34b8454e28":"posts"."id" < "media"."postId"
+
+Ref "FK_a6b3c434392f5d10ec171043666":"products"."id" < "reviews"."productId"
+
+Ref "FK_af929a5f2a400fdb6913b4967e1":"orders"."id" < "payments"."orderId"
+
+Ref "FK_becbe37977577e3eeb089b69fe1":"posts"."id" < "post_categories"."post_id" [update: cascade, delete: cascade]
+
+Ref "FK_c5a322ad12a7bf95460c958e80e":"users"."id" < "posts"."authorId"
+
+Ref "FK_c6065536f2f6de3a0163e19a584":"users"."id" < "bookmarks"."userId"
+
+Ref "FK_c88d2686339ad6d166620b741a6":"users"."id" < "reports"."reportedUserId"
+
+Ref "FK_cdb99c05982d5191ac8465ac010":"products"."id" < "order_items"."productId"
+
+Ref "FK_cfd8e81fac09d7339a32e57d904":"users"."id" < "likes"."userId"
+
+Ref "FK_dec9d57e3ca30ce83238afeb962":"users_example"."id" < "posts_example"."authorId"
+
+Ref "FK_e2fe567ad8d305fefc918d44f50":"posts"."id" < "likes"."postId"
+
+Ref "FK_e44ddaaa6d058cb4092f83ad61f":"posts"."id" < "comments"."postId"
+
+Ref "FK_edd714311619a5ad09525045838":"carts"."id" < "cart_items"."cartId"
+
+Ref "FK_ef463dd9a2ce0d673350e36e0fb":"users"."id" < "follows"."followingId"
+
+Ref "FK_f1d359a55923bb45b057fbdab0d":"orders"."id" < "order_items"."orderId"
+
+Ref "FK_f2cd3faf2e129a4c69c05a291e8":"tags"."id" < "product_tags"."tag_id" [update: cascade, delete: cascade]
+
+Ref "FK_f6e2655c798334198182db6399b":"categories"."id" < "post_categories"."category_id"
+
+Ref "FK_fb36e50e6e1b13efb21fcf8d903":"categories"."id" < "post_categories_example"."category_id"
+
+Ref "FK_fdb91868b03a2040db408a53331":"users"."id" < "follows"."followerId"
+
+Ref "FK_ff56834e735fa78a15d0cf21926":"categories"."id" < "products"."categoryId"

@@ -8,6 +8,7 @@ export const AppDataSource = new DataSource({
   password: process.env.DB_PASSWORD || 'erd-test',
   database: process.env.DB_DATABASE || 'erd-test',
   entities: [__dirname + '/../**/*.entity{.ts,.js}'],
-  synchronize: true,
+  // CI/CD에서 DBML 생성 시에만 true, 프로덕션에서는 false
+  // 프로덕션에서는 migration 사용 권장
+  synchronize: process.env.TYPEORM_SYNC === 'true',
 });
-
