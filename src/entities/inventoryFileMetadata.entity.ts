@@ -9,19 +9,19 @@ import {
   UpdateDateColumn,
   DeleteDateColumn,
 } from 'typeorm';
-import { InventoryMaterialFile } from './inventoryMaterialFile.entity';
+import { InventoryFile } from './inventoryFile.entity';
 
 /**
- * 인벤토리 물질 파일 메타데이터 테이블
+ * 인벤토리 파일 메타데이터 테이블
  * - 파일에 대한 추가 메타데이터 저장
- * - InventoryMaterialFile과 1:1 관계
+ * - InventoryFile과 1:1 관계
  */
 @Entity({
-  name: 'inventoryMaterialFileMetadata',
-  comment: '인벤토리 물질 파일 메타데이터',
+  name: 'inventoryFileMetadata',
+  comment: '인벤토리 파일 메타데이터',
 })
 @Index(['inventoryFileId'], { unique: true, where: '"deletedAt" IS NULL' })
-export class InventoryMaterialFileMetadata {
+export class InventoryFileMetadata {
   @PrimaryGeneratedColumn('uuid', {
     comment: '파일 메타데이터 ID',
   })
@@ -32,7 +32,7 @@ export class InventoryMaterialFileMetadata {
     type: 'uuid',
     nullable: false,
   })
-  inventoryFileId: InventoryMaterialFile['inventoryFileId'];
+  inventoryFileId: InventoryFile['inventoryFileId'];
 
   @Column({
     comment: '메타데이터',
@@ -52,10 +52,11 @@ export class InventoryMaterialFileMetadata {
 
   // ===== Relations =====
 
-  @OneToOne(() => InventoryMaterialFile, (file) => file.fileMetadata)
+  @OneToOne(() => InventoryFile, (file) => file.fileMetadata)
   @JoinColumn({
     name: 'inventoryFileId',
     referencedColumnName: 'inventoryFileId',
   })
-  file?: InventoryMaterialFile;
+  file?: InventoryFile;
 }
+

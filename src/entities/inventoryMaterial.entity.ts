@@ -8,10 +8,11 @@ import {
   ManyToOne,
   OneToMany,
   JoinColumn,
+  Index,
 } from 'typeorm';
 import { Inventory } from './inventory.entity';
 import { InventoryMaterialValue } from './inventoryMaterialValue.entity';
-import { InventoryMaterialFile } from './inventoryMaterialFile.entity';
+import { InventoryFile } from './inventoryFile.entity';
 
 /**
  * 인벤토리 물질 테이블
@@ -20,12 +21,13 @@ import { InventoryMaterialFile } from './inventoryMaterialFile.entity';
  * - 파일, 연동문서는 별도 테이블에서 다중 관리
  */
 @Entity('inventoryMaterial')
+@Index(['inventoryId', 'materialSequence']) // 인벤토리별 Material 리스트 조회 (materialSequence DESC 정렬용)
 export class InventoryMaterial {
   @PrimaryGeneratedColumn('uuid')
-  id: string;
+  inventoryMaterialId: string;
 
   @Column({ type: 'uuid' })
-  inventoryId: string;
+  inventoryId: Inventory['inventoryId'];
 
   // ===== 물질 식별 정보 =====
 
@@ -63,6 +65,6 @@ export class InventoryMaterial {
   values: InventoryMaterialValue[];
 
   // 파일 (다중) - Default 파일 컬럼 + 커스텀 파일 컬럼
-  @OneToMany(() => InventoryMaterialFile, (file) => file.material)
-  files: InventoryMaterialFile[];
+  @OneToMany('InventoryFile', 'material')
+  files: InventoryFile[];
 }

@@ -6,13 +6,16 @@ import {
   UpdateDateColumn,
   DeleteDateColumn,
   OneToMany,
+  OneToOne,
   Index,
 } from 'typeorm';
 import { InventoryMaterial } from './inventoryMaterial.entity';
 import { InventoryColumn } from './inventoryColumn.entity';
+import { InventorySetting } from './inventorySetting.entity';
 
 @Entity('inventory')
-@Index(['groupId', 'name'], { unique: true, where: '"deleted_at" IS NULL' })
+@Index(['groupId', 'name'], { unique: true, where: '"deletedAt" IS NULL' }) // 그룹 내 인벤토리명 중복 방지
+@Index(['groupId', 'updatedAt']) // 그룹별 인벤토리 리스트 조회 (updatedAt DESC 정렬용)
 export class Inventory {
   @PrimaryGeneratedColumn('uuid')
   inventoryId: string;
@@ -22,14 +25,6 @@ export class Inventory {
 
   @Column({ length: 200 })
   name: string;
-
-  // ===== Material ID 생성 설정 =====
-
-  @Column({ length: 5, default: 'ANT' })
-  prefix: string; // Material ID prefix (예: ANT)
-
-  @Column({ type: 'int', default: 1 })
-  sequence: number; // 다음 Material에 부여할 sequence
 
   // ===== Timestamps =====
 
@@ -43,6 +38,11 @@ export class Inventory {
   deletedAt: Date;
 
   // ===== Relations =====
+
+  @OneToOne('InventorySetting', 'inventory', {
+    cascade: true,
+  })
+  setting: InventorySetting;
 
   @OneToMany(() => InventoryColumn, (column) => column.inventory, {
     cascade: true,

@@ -12,7 +12,7 @@ import {
 } from 'typeorm';
 import { InventoryMaterial } from './inventoryMaterial.entity';
 import { InventoryColumn } from './inventoryColumn.entity';
-import { InventoryMaterialFileMetadata } from './inventoryMaterialFileMetadata.entity';
+import { InventoryFileMetadata } from './inventoryFileMetadata.entity';
 import { VARCHAR_SIZE_SET } from 'src/types';
 
 export const FileType = {
@@ -28,27 +28,28 @@ export const UploadStatus = {
   UPLOADING: 'uploading',
   UPLOADED: 'uploaded',
   DELETED: 'deleted',
-};
+} as const;
 
 export type UploadStatus = (typeof UploadStatus)[keyof typeof UploadStatus];
 
 /**
- * 인벤토리 물질 파일 테이블
+ * 인벤토리 파일 테이블
  * - Default 파일 컬럼: inventoryColumnId가 null
  * - 커스텀 파일 컬럼: inventoryColumnId가 해당 컬럼 ID
  * - 다중 파일 지원
  */
-@Entity('inventoryMaterialFile')
-@Index(['inventoryMaterialId', 'inventoryColumnId'])
-export class InventoryMaterialFile {
+@Entity('inventoryFile')
+@Index(['inventoryMaterialId', 'inventoryColumnId']) // Material + Column별 파일 조회
+@Index(['inventoryMaterialId']) // Material별 모든 파일 조회
+export class InventoryFile {
   @PrimaryGeneratedColumn('uuid')
   inventoryFileId: string;
 
   @Column({ type: 'uuid' })
-  inventoryMaterialId: string;
+  inventoryMaterialId: InventoryMaterial['inventoryMaterialId'];
 
   @Column({ type: 'uuid' })
-  inventoryColumnId: string;
+  inventoryColumnId: InventoryColumn['inventoryColumnId'];
 
   @Column({
     comment: '파일 이름',
@@ -131,6 +132,6 @@ export class InventoryMaterialFile {
   @JoinColumn({ name: 'inventoryColumnId' })
   column: InventoryColumn;
 
-  @OneToOne(() => InventoryMaterialFileMetadata, (metadata) => metadata.file)
-  fileMetadata?: InventoryMaterialFileMetadata;
+  @OneToOne(() => InventoryFileMetadata, (metadata) => metadata.file)
+  fileMetadata?: InventoryFileMetadata;
 }

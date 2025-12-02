@@ -25,7 +25,8 @@ export enum InventoryColumnType {
 }
 
 @Entity('inventoryColumn')
-@Index(['inventoryId', 'name'], { unique: true, where: '"deleted_at" IS NULL' })
+@Index(['inventoryId', 'name'], { unique: true, where: '"deletedAt" IS NULL' }) // 인벤토리 내 컬럼명 중복 방지
+@Index(['inventoryId', 'order']) // 인벤토리별 컬럼 리스트 조회 (order ASC 정렬용)
 export class InventoryColumn {
   @PrimaryGeneratedColumn('uuid')
   inventoryColumnId: string;

@@ -20,8 +20,10 @@ import { InventoryColumn } from './inventoryColumn.entity';
 @Entity('inventoryMaterialValue')
 @Index(['inventoryMaterialId', 'inventoryColumnId'], {
   unique: true,
-  where: '"deleted_at" IS NULL',
-})
+  where: '"deletedAt" IS NULL',
+}) // Material + Column 조합 중복 방지
+@Index(['inventoryMaterialId']) // Material별 모든 값 조회
+@Index(['inventoryColumnId']) // 특정 컬럼의 모든 값 조회 (컬럼별 필터/검색용)
 export class InventoryMaterialValue {
   @PrimaryGeneratedColumn('uuid')
   inventoryMaterialValueId: string;
