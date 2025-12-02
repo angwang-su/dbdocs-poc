@@ -2,29 +2,36 @@ import {
   Entity,
   PrimaryGeneratedColumn,
   Column,
-  ManyToOne,
-  JoinColumn,
   CreateDateColumn,
   UpdateDateColumn,
+  DeleteDateColumn,
+  OneToMany,
+  Index,
 } from 'typeorm';
-import { Product } from './product.entity';
+import { InventoryMaterial } from './inventoryMaterial.entity';
+import { InventoryColumn } from './inventoryColumn.entity';
 
-@Entity('inventories')
+@Entity('inventory')
+@Index(['groupId', 'name'], { unique: true, where: '"deleted_at" IS NULL' })
 export class Inventory {
-  @PrimaryGeneratedColumn()
-  id: number;
+  @PrimaryGeneratedColumn('uuid')
+  inventoryId: string;
 
-  @Column()
-  quantity: number;
+  @Column({ type: 'uuid' })
+  groupId: string;
 
-  @Column({ length: 100 })
-  warehouse: string;
+  @Column({ length: 200 })
+  name: string;
 
-  @Column({ length: 50, nullable: true })
-  location: string;
+  // ===== Material ID 생성 설정 =====
 
-  @Column({ type: 'timestamp', nullable: true })
-  lastRestockedAt: Date;
+  @Column({ length: 5, default: 'ANT' })
+  prefix: string; // Material ID prefix (예: ANT)
+
+  @Column({ type: 'int', default: 1 })
+  sequence: number; // 다음 Material에 부여할 sequence
+
+  // ===== Timestamps =====
 
   @CreateDateColumn()
   createdAt: Date;
@@ -32,8 +39,16 @@ export class Inventory {
   @UpdateDateColumn()
   updatedAt: Date;
 
-  @ManyToOne(() => Product)
-  @JoinColumn()
-  product: Product;
-}
+  @DeleteDateColumn()
+  deletedAt: Date;
 
+  // ===== Relations =====
+
+  @OneToMany(() => InventoryColumn, (column) => column.inventory, {
+    cascade: true,
+  })
+  columns: InventoryColumn[];
+
+  @OneToMany(() => InventoryMaterial, (material) => material.inventory)
+  materials: InventoryMaterial[];
+}
