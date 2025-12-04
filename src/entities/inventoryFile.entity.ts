@@ -32,9 +32,6 @@ export class InventoryFile {
   inventoryMaterialId: InventoryMaterial['inventoryMaterialId'];
 
   @Column({ type: 'uuid' })
-  inventoryColumnId: InventoryColumn['inventoryColumnId'];
-
-  @Column({ type: 'uuid' })
   fileId: File['fileId'];
 
   @CreateDateColumn()
