@@ -6,12 +6,10 @@ import {
   UpdateDateColumn,
   DeleteDateColumn,
   OneToMany,
-  OneToOne,
   Index,
 } from 'typeorm';
 import { InventoryMaterial } from './inventoryMaterial.entity';
 import { InventoryColumn } from './inventoryColumn.entity';
-import { InventorySetting } from './inventorySetting.entity';
 import { VARCHAR_SIZE_SET } from 'src/types';
 
 @Entity('inventory')
@@ -44,12 +42,6 @@ export class Inventory {
   deletedAt: Date;
 
   // ===== Relations =====
-
-  @OneToOne('InventorySetting', 'inventory', {
-    cascade: true,
-  })
-  setting: InventorySetting;
-
   @OneToMany(() => InventoryColumn, (column) => column.inventory, {
     cascade: true,
   })
