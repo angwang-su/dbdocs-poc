@@ -6,13 +6,11 @@ import {
   UpdateDateColumn,
   DeleteDateColumn,
   ManyToOne,
-  OneToOne,
   JoinColumn,
   Index,
 } from 'typeorm';
 import { InventoryMaterial } from './inventoryMaterial.entity';
 import { InventoryColumn } from './inventoryColumn.entity';
-import { InventoryFileMetadata } from './inventoryFileMetadata.entity';
 import { VARCHAR_SIZE_SET } from 'src/types';
 
 export const FileType = {
@@ -131,7 +129,4 @@ export class InventoryFile {
   @ManyToOne(() => InventoryColumn, { nullable: true, onDelete: 'CASCADE' })
   @JoinColumn({ name: 'inventoryColumnId' })
   column: InventoryColumn;
-
-  @OneToOne(() => InventoryFileMetadata, (metadata) => metadata.file)
-  fileMetadata?: InventoryFileMetadata;
 }

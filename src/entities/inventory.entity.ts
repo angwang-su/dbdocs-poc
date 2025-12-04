@@ -12,6 +12,7 @@ import {
 import { InventoryMaterial } from './inventoryMaterial.entity';
 import { InventoryColumn } from './inventoryColumn.entity';
 import { InventorySetting } from './inventorySetting.entity';
+import { VARCHAR_SIZE_SET } from 'src/types';
 
 @Entity('inventory')
 @Index(['groupId', 'name'], { unique: true, where: '"deletedAt" IS NULL' }) // 그룹 내 인벤토리명 중복 방지
@@ -23,11 +24,16 @@ export class Inventory {
   @Column({ type: 'uuid' })
   groupId: string;
 
-  @Column({ length: 200 })
+  @Column({ length: VARCHAR_SIZE_SET.LARGE })
   name: string;
 
-  // ===== Timestamps =====
+  @Column({ length: VARCHAR_SIZE_SET.TINY })
+  prefix: string;
 
+  @Column({ type: 'int', default: 1 })
+  sequence: number;
+
+  // ===== Timestamps =====
   @CreateDateColumn()
   createdAt: Date;
 

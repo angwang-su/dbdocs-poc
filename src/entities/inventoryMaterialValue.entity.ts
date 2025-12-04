@@ -45,9 +45,6 @@ export class InventoryMaterialValue {
   @Column({ type: 'timestamp', nullable: true })
   dateValue: Date; // type: date (P2)
 
-  @Column({ length: 200, nullable: true })
-  selectValue: string; // type: select (P2)
-
   @Column({ type: 'jsonb', nullable: true })
   chemicalStructureValue: Record<string, any>; // type: chemical_structure
   /*
